@@ -2,6 +2,7 @@ mod audio;
 mod cli;
 mod session;
 mod signals;
+mod transcription;
 
 use anyhow::{bail, Result};
 use clap::Parser;
@@ -143,15 +144,40 @@ fn cmd_stop() -> Result<()> {
     let info = session::stop_session()?;
 
     let opus_path = info.session_dir.join("meeting.opus");
-    if opus_path.exists() {
-        let metadata = std::fs::metadata(&opus_path)?;
-        let size_mb = metadata.len() as f64 / (1024.0 * 1024.0);
-        println!("Saved: {} ({:.1} MB)", opus_path.display(), size_mb);
-    } else {
-        println!("Session stopped: {}", info.session_dir.display());
+    if !opus_path.exists() {
+        println!(
+            "Session stopped: {} (no audio file produced)",
+            info.session_dir.display()
+        );
+        return Ok(());
     }
 
-    Ok(())
+    let size_mb = std::fs::metadata(&opus_path)?.len() as f64 / (1024.0 * 1024.0);
+
+    match transcription::run_on_session(&info.session_dir) {
+        Ok(outcome) => {
+            println!("Saved:");
+            println!("  {} ({:.1} MB)", opus_path.display(), size_mb);
+            println!(
+                "  {} ({} segments, {:.0}s audio, {:.0}s wall, {})",
+                outcome.transcript_path.display(),
+                outcome.segment_count,
+                outcome.duration_sec,
+                outcome.wall_sec,
+                outcome.accelerator,
+            );
+            Ok(())
+        }
+        Err(error) => {
+            eprintln!("Transcription failed: {error:#}");
+            eprintln!("Audio is preserved at: {}", opus_path.display());
+            eprintln!(
+                "Logs: {}",
+                info.session_dir.join("transcription.log").display()
+            );
+            std::process::exit(2);
+        }
+    }
 }
 
 fn cmd_status() -> Result<()> {

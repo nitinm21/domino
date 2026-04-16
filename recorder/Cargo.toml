@@ -26,12 +26,31 @@ ringbuf = "0.4"
 audiopus = "0.2"
 ogg = "0.9"
 
+# Transcription: model download + integrity verification
+ureq = { version = "2", features = ["tls"] }
+sha2 = "0.10"
+hex = "0.4"
+indicatif = "0.17"
+
+# Transcription: resampling (Opus decode reuses existing audiopus + ogg deps,
+# so symphonia is intentionally not pulled in — saves ~40 MB of transitive
+# crates and keeps decode symmetric with the encoder path).
+rubato = "0.16"
+
 [dev-dependencies]
 dirs = "5"
 libc = "0.2"
+jsonschema = "0.18"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 screencapturekit = "1.5"
+whisper-rs = { version = "0.16", default-features = false, features = ["metal"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+whisper-rs = { version = "0.16", default-features = false, features = ["vulkan"] }
+
+[target.'cfg(not(any(target_os = "macos", target_os = "windows")))'.dependencies]
+whisper-rs = { version = "0.16", default-features = false }
 
 [profile.release]
 opt-level = 3

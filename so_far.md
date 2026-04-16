@@ -35,17 +35,23 @@ The human only presses a few buttons. The assistant does the rest.
 
 ## 3. Current Scope (v1)
 
-**In scope:** capture audio locally and store it on disk.
+**In scope:**
+- Capture audio locally and store it on disk.
+- **Local transcription, automatically triggered on `/record stop`** (see Section 7.5). English-only, fully offline, no cloud round-trip.
 
 **Out of scope for now (explicitly deferred):**
-- Transcription
-- Diarization
+- Fine-grained intra-meeting diarization (distinguishing multiple speakers *within* the meeting channel — we only label "You" vs. "Meeting" in v1 via the stereo split)
 - LLM synthesis of meeting content
 - Proactive task generation
 - Plan approval UX
 - Integration with the assistant's codebase understanding
+- Multi-language transcription (v1 ships English-only via `ggml-small.en`)
 
-The decision to scope down to just capture is deliberate: get the hard, platform-specific, trust-sensitive layer rock-solid first. Everything downstream is pure software on top of a file and can iterate fast once the file exists.
+### Transcription is automatic, not a separate user step
+
+The user's job is **only** to press Start and Stop. Transcription is never a command the user invokes explicitly. When `/record stop` runs, the recorder finalizes `meeting.opus` and then transcribes it in the same invocation, streaming progress to the terminal. By the time `/record stop` returns, both `meeting.opus` and `transcript.json` exist on disk. This keeps the mental model simple: one button to start, one button to stop, and everything downstream "just happened."
+
+The decision to scope down capture + transcription (and nothing further) is deliberate: get the hard, platform-specific, trust-sensitive layers rock-solid first. LLM synthesis and task generation are pure software on top of a transcript and can iterate fast once the transcript exists.
 
 ---
 
@@ -134,6 +140,74 @@ Estimated total helper size: ~500 lines of Rust.
 
 ---
 
+## 7.5. Local Transcription
+
+**Decision: transcribe with `whisper.cpp` via the `whisper-rs` Rust bindings, using the `ggml-small.en` model, running automatically at the end of every `/record stop`.**
+
+### Model
+
+- **Model:** `ggml-small.en.bin` (~465 MB), English-only.
+- **Storage location:** `~/.domino/models/ggml-small.en.bin` on both platforms.
+- **Distribution:** the plugin pre-downloads the model at install time. If the file is missing or corrupted at `/record stop` time (e.g., plugin install was interrupted, user deleted it, SHA mismatch), the recorder falls back to an on-demand download with a progress bar and SHA256 verification. Resumable via HTTP Range.
+- **Source:** Hugging Face `ggerganov/whisper.cpp` repository, pinned URL + SHA256 in the Rust binary.
+- **Why `small.en`:** sweet spot for meeting audio accuracy vs. size. `tiny.en` (~75 MB) fumbles technical vocabulary; `medium.en` (~1.5 GB) is noticeably better but bloats install footprint beyond what is reasonable for an invisible plugin install step.
+
+### Pipeline
+
+1. `/record stop` sends SIGTERM to the capture daemon as today.
+2. Daemon flushes the Ogg Opus file and exits (existing behavior, unchanged).
+3. The `/record stop` process (running in the user's terminal, where stdout is visible) then:
+   a. Decodes `meeting.opus` with `symphonia` (pure-Rust Opus decoder).
+   b. Splits the stereo stream into two 48 kHz mono f32 buffers: Left = mic = "You", Right = system = "Meeting".
+   c. Resamples each to 16 kHz mono f32 (whisper's required input format) using `rubato`.
+   d. Runs whisper on each channel independently, with GPU acceleration auto-detected (Metal on macOS, Vulkan on Windows; CPU fallback).
+   e. Interleaves the resulting segments by start time, tagging each with its channel's speaker label.
+4. Writes `transcript.json` and `transcription.log` into the session directory.
+5. Prints the transcript path and duration, then exits.
+
+### Speaker labels (channel-based "diarization")
+
+Because the stereo split already separates user voice from meeting audio at the source, we get speaker labels **for free** by transcribing each channel independently:
+
+- Left channel → `"speaker": "You"`
+- Right channel → `"speaker": "Meeting"`
+
+True intra-meeting diarization (distinguishing Bob from Alice inside the meeting channel) is deferred — it would require an additional ONNX pipeline and is not the main payoff of the stereo decision.
+
+### Output format
+
+`~/.domino/recordings/<session>/transcript.json`:
+
+```json
+{
+  "version": 1,
+  "audio_file": "meeting.opus",
+  "duration_sec": 2832.4,
+  "model": "ggml-small.en",
+  "model_sha256": "…",
+  "language": "en",
+  "segments": [
+    { "start": 0.0,  "end": 3.4,  "speaker": "You",     "text": "Hey, thanks for joining." },
+    { "start": 3.5,  "end": 7.1,  "speaker": "Meeting", "text": "Yeah, happy to." },
+    …
+  ]
+}
+```
+
+Segment-level timestamps only. Word-level timestamps are deferred — they roughly double transcription time and are not useful until we have a UI that scrubs audio alongside text.
+
+### Execution model
+
+- **Blocking.** `/record stop` returns only after the transcript is on disk. Progress is streamed to stdout (`"transcribing: 40% (18m of 45m)"`).
+- **Not a separate subcommand.** No `domino-recorder transcribe`. The user has no way to skip, re-trigger, or configure it from the plugin surface. Transcription is a transparent internal step of `/record stop`.
+- **Ctrl-C-safe.** If the user cancels `/record stop` mid-transcription, `meeting.opus` is already on disk from step 2, so nothing is lost. They can re-invoke the transcription internally (mechanism TBD in plan) without re-recording.
+
+### Performance expectations
+
+On an M2 Mac with Metal, `small.en` transcribes ~30x realtime — a 60-minute meeting transcribes in ~2 minutes. Windows Vulkan is similar. CPU-only is 5–10x slower.
+
+---
+
 ## 8. User-Facing Interface
 
 Slash commands inside the coding assistant:
@@ -172,8 +246,14 @@ Silent start on both platforms. No prompts, no friction.
 
 ```
 > /record stop
-Saved: ~/.claude/recordings/2026-04-15-1423/meeting.opus (24.1 MB, 47m 12s)
+Finalizing audio...
+Transcribing with ggml-small.en (Metal): 100% (47m 12s)
+Saved:
+  ~/.domino/recordings/2026-04-15-1423/meeting.opus     (24.1 MB, 47m 12s)
+  ~/.domino/recordings/2026-04-15-1423/transcript.json  (312 segments)
 ```
+
+Transcription is not a user-initiated step. It runs automatically as the tail end of `/record stop`. The user never types "transcribe" — they press Start, press Stop, and walk away with a transcript.
 
 ---
 
@@ -282,3 +362,8 @@ Each smoke test: start, speak, play a YouTube video for 30s, stop, verify both c
 | 2026-04-15 | macOS 13+ minimum (no BlackHole) | ScreenCaptureKit gives driver-free system audio; BlackHole would reintroduce install friction |
 | 2026-04-15 | Single stereo Opus file, mic-left / system-right | One file for downstream simplicity, zero information loss vs. two files, enables echo cancellation & speaker labeling later |
 | 2026-04-15 | v1 scope limited to capture + local storage | De-risk the platform-specific layer before building transcription/synthesis on top |
+| 2026-04-16 | Add local transcription to v1, automatic on `/record stop` | Transcript is the actual deliverable users want; forcing a separate command would violate the "Start / Stop, that's it" product principle |
+| 2026-04-16 | Whisper.cpp via whisper-rs, `ggml-small.en` model | Best cross-platform Rust option; no runtime; GPU-accelerated on Metal + Vulkan; stays offline/private |
+| 2026-04-16 | Model pre-downloaded at plugin install time, with on-demand fallback | 465 MB download during install keeps the first recording fast; on-demand fetch covers corrupted/deleted/missing model at stop time |
+| 2026-04-16 | Channel-based speaker labels only ("You" vs. "Meeting"); defer intra-meeting diarization | The stereo split already gives us this for free; adding pyannote/sherpa-onnx is a new dependency for marginal v1 value |
+| 2026-04-16 | Blocking transcription on `/record stop`, progress streamed to stdout | Simpler UX ("stop, wait ~2m, done") than detached background; no IPC channel needed to surface progress |

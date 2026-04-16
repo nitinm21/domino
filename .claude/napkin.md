@@ -21,8 +21,18 @@
    Do instead: keep `starter_pack/.git` out of the workspace before staging so Git tracks the folder contents instead of an embedded repo link.
 2. **[2026-04-16] Build commands are anchored on the recorder manifest**
    Do instead: run `cargo build --release --manifest-path recorder/Cargo.toml` or `cargo test --manifest-path recorder/Cargo.toml` from repo root.
-3. **[2026-04-16] `screencapturekit` rebuilds can fail on local Swift toolchain mismatches**
-   Do instead: if a fresh `cargo build` fails in the custom build step, use the existing compiled binary for manual recorder verification and treat the Swift environment as a separate toolchain problem.
+3. **[2026-04-16] Release recorder builds on this machine need the 15.4 macOS SDK**
+   Do instead: run `SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk cargo build --release --manifest-path recorder/Cargo.toml` when `screencapturekit` is in the build.
+4. **[2026-04-16] Debug recorder binaries can fail to load the Swift runtime**
+   Do instead: if `cargo test` or `recorder/target/debug/domino-recorder` aborts on `libswift_Concurrency.dylib`, use `recorder/target/release/domino-recorder` for manual smoke checks and treat the debug runtime issue separately from recorder logic.
+5. **[2026-04-16] Phase 3 whisper smoke tests need explicit SDK and Swift runtime env on macOS**
+   Do instead: export `SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk` and `DYLD_FALLBACK_LIBRARY_PATH=/Library/Developer/CommandLineTools/usr/lib/swift-5.5/macosx` before running the targeted `cargo test` commands.
+6. **[2026-04-16] `whisper-rs` rebuilds on this machine miss libc++ headers by default**
+   Do instead: when `cargo build` or `cargo test` compiles `whisper-rs-sys`, export `SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.2.sdk`, `CXXFLAGS='-I /Library/Developer/CommandLineTools/SDKs/MacOSX26.2.sdk/usr/include/c++/v1'`, and `DYLD_FALLBACK_LIBRARY_PATH=/Library/Developer/CommandLineTools/usr/lib/swift-5.5/macosx`.
+7. **[2026-04-16] Terminal commands for this user must be copy-safe**
+   Do instead: prefer single-line commands; if a command truly needs multiple lines, use explicit continuations or fenced blocks that paste cleanly into `zsh`.
+8. **[2026-04-16] Sandboxed release builds can fail inside `screencapturekit`'s Swift bridge**
+   Do instead: if `cargo build --release` dies with `sandbox-exec: sandbox_apply: Operation not permitted`, rerun the release build outside the workspace sandbox instead of changing Rust code.
 
 ## Domain Behavior Guardrails
 1. **[2026-04-16] `doctor` is still a stub**
