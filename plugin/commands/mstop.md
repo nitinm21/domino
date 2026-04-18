@@ -7,6 +7,19 @@ You are running the `/mstop` command. This command has three jobs that unfold ac
 1. This turn: stop the recorder, read the transcript, write `plan.md`, and present a summary.
 2. Next turn(s): either execute the plan on approval, or iterate on the plan based on the user's feedback, or acknowledge rejection.
 
+## Clarifying questions — global rule
+
+At a few specific points below, this command is allowed to ask the user for clarification via the `AskUserQuestion` tool. These rules are absolute and apply across every step of this command:
+
+- **Prefer silence.** Domino's whole UX thesis is that the user does not have to prompt synthesis. Every question is a tax. Ask only when the transcript plus the code cannot give you enough signal to make a confident choice, and the answer would materially change the output.
+- **Genuine ambiguity only.** Do not ask to "double-check" a choice you could make yourself. Do not ask about cosmetic matters (naming, formatting). Do not ask anything a single extra Grep or Read would answer.
+- **At most one `AskUserQuestion` call per turn.** Batch every pending question into that single call. If you realize another question is needed after the user replies, fold it into a later turn — do not fire a second call in the same turn.
+- **At most 4 questions per call (the tool's hard upper bound), and never more than 5 questions across the whole turn.** If you have more ambiguities than that, rank by impact (items that most change the plan) and ask about the top ones; apply a defensible default to the rest and note the default inline in the plan.
+- **Each question ships with 2–4 concrete options.** The UI automatically adds an "Other" free-form path — do not add your own. Options must be mutually exclusive and each should be a complete answer on its own. Recommended option goes first with `(Recommended)` appended to its label.
+- **Header field is ≤12 characters.** Questions end with a question mark and are self-contained (the user does not see the plan or the transcript — quote or paraphrase inline whatever context the question depends on).
+
+If `AskUserQuestion` is not available in the current environment, every step that would have called it must instead fall through: record the unresolved items as Open Questions in the plan and proceed.
+
 ## Step 1 — Stop the recorder
 
 Run `domino-recorder stop` via Bash. Let its stdout and stderr pass through to the terminal so the user sees the existing transcription progress (decoding, resampling, per-channel progress bars, the `Saved:` block). Do not wrap, suppress, or replace this output.
@@ -19,17 +32,35 @@ Interpret the result:
 
 If `domino-recorder stop` fails for any other reason (non-zero exit other than 2, missing binary, etc.), surface the error text clearly and stop.
 
-## Step 2 — Read the transcript and explore the repo
+## Step 2 — Read the transcript, map it to code, and clarify
 
 Read `<session-dir>/transcript.json`. It has the shape documented in Domino's transcript schema: a top-level object with a `segments` array where each segment has `start`, `end`, `speaker` ("You" or "Meeting"), and `text`.
 
-Now explore the current working directory at **medium depth**:
+Real meetings rarely name files or symbols; people describe pain. Your job in this step is to translate that pain into code grounding, then resolve any remaining ambiguity before writing a plan.
 
-- For every file path mentioned in any segment's `text` (e.g. `src/auth.ts`, `api/v1/users.py`), read the file if it exists.
-- For every symbol mentioned (function names, class names, config keys), use Grep to find where it lives in the repo. Read the top 1–3 files that contain each symbol, enough to ground the plan.
-- Do not spawn a full Explore sweep. Do not recursively follow every import. Stay targeted — the goal is to ground the plan in real code, not to map the whole repo.
+1. **Extract pain points from the transcript.** A pain point is a concrete thing discussed in the meeting that would change the code — a complaint, a desired behavior, a decision, a feature request, a bug. Express each pain point as a short noun phrase (e.g., "checkout drop-off on mobile", "auth tokens rotated too often", "dashboard filter is slow"). Expect 1–6 per meeting; cap at 8 and merge near-duplicates. If the transcript contains no pain points that could change code in this repo, fall through to the empty-meeting branch in Step 3.
 
-Budget roughly 30–120 seconds of tool calls for this step. If you find nothing relevant (no mentioned paths, no grep hits), fall through to the empty-meeting branch in Step 3.
+2. **Map each pain to code inside the current working directory.** Proceed in this order per pain and stop at the first rung that grounds the pain in ≥1 concrete file:
+   - *Literal hints first.* If the transcript names a file path, Read it (if it exists under the CWD). If the transcript names a symbol (function, class, config key, route), Grep for it inside the CWD and Read the top 1–3 hits.
+   - *Keyword search from the concept.* Derive 2–4 keyword queries from the pain itself and run Glob + Grep against the CWD. Example: "checkout drop-off on mobile" → Glob `**/checkout*`, `**/cart*`, `**/payment*`; Grep `checkout|cart|payment`. Read the strongest 1–3 matches.
+   - *Subagent escalation.* If literal and keyword search both ground nothing, dispatch the `Explore` subagent with thoroughness "medium" and a scoped prompt: `Find code implementing <pain phrase> under the current working directory. Report file paths and a 1-line justification for each.` **Budget: at most 3 `Explore` calls total across all pains.** Reserve them for the pains literal/keyword search failed to ground.
+   Budget the whole sub-step at roughly 30–120 seconds of tool calls.
+
+3. **Collect ambiguities worth asking about.** An item goes on this list only if you cannot resolve it from the transcript plus the code you just read. Three valid types — nothing else qualifies:
+   - *Unmapped pain* — a pain point that every rung in sub-step 2 failed to ground. The question should quote/paraphrase the pain and offer as options the best 2–4 candidate directories or files you did find (even if none felt strong), so the user can point you at the right spot. If you found zero candidates, offer the 2–3 most likely top-level folders inside the CWD.
+   - *Architectural fork* — the transcript implies a change but the code admits ≥2 defensible approaches (e.g., add a feature flag vs. refactor the call site, extend vs. replace). Options are the distinct approaches; put the one you'd pick first with `(Recommended)`.
+   - *Owner gap for a concrete action item* — the transcript implies a task but does not name an owner and guessing would be fabrication. Options are the distinct speakers heard ("You", "Meeting") plus "Unassigned". Only collect this when the action item is concrete enough that the owner would actually change who does the work.
+   Do **not** collect ambiguities for cosmetic questions, for anything one more Grep would answer, or for pains you have confidently grounded.
+
+4. **Ask clarifying questions (only if needed).** If sub-step 3 collected zero ambiguities, skip this sub-step silently and proceed to Step 3.
+
+   Otherwise, call `AskUserQuestion` **once**, honoring the global rule at the top of this file. If you have more than 4 ambiguities, rank by impact (unmapped pains > architectural forks > owner gaps, breaking ties by how much the plan would change) and ask only the top 4; for each ambiguity you did not ask about, apply a defensible default (unmapped pain → Open Question in the plan; architectural fork → pick your recommended approach and note the decision under Risks; owner gap → "unclear").
+
+   After the user replies, fold each answer back into the mapping:
+   - *Unmapped pain* answered with a file or directory → Read it if not already read, then treat that pain as grounded.
+   - *Architectural fork* answered → commit to the chosen approach; any rejected approaches do not appear in the plan.
+   - *Owner gap* answered → use the supplied owner verbatim in the action item.
+   - *"Other" / free-form* → treat the text as grounding context, not as a directive to launch more exploration. If the free-form answer names a file, Read it once and then proceed.
 
 ## Step 3 — Decide: plan or bailout
 
@@ -40,7 +71,11 @@ Look at the transcript and your exploration together. Ask yourself: **is there a
 
 ## Step 4 — Write `plan.md`
 
-Write a plan to `<session-dir>/plan.md` using the following Rich template. **Drop any section that has no real content rather than fabricating entries.** Only attribute decisions ("raised by Meeting") where the transcript makes the attribution explicit. Never invent files, symbols, or quotes that are not in the transcript or the repo.
+Write a plan to `<session-dir>/plan.md` using the following Rich template. The following rules are absolute:
+
+- **Every `Proposed change` must reference a file you Read during this turn.** If a pain could not be grounded in a readable file and the user did not supply one via clarifying questions, list it under `Open questions` instead of fabricating a `Proposed change`. Do not invent paths, symbols, or quotes that are not in the transcript or the repo.
+- Drop any section that has no real content rather than fabricating entries.
+- Only attribute decisions ("raised by Meeting") where the transcript makes the attribution explicit.
 
     # Meeting Plan — <date> <time>
 
@@ -92,7 +127,7 @@ The user has seen the plan. Their next message will be one of three things:
 - **Iteration feedback** — anything suggesting a change to the plan, e.g. "don't touch `src/auth.ts`", "also add a regression test", "use a feature flag instead", "rename the branch", "do only the first phase". → Revise `plan.md` as described below, then repeat Step 5 (print the updated summary) and return to waiting.
 - **Rejection** — "cancel", "never mind", "don't do it", "scrap it". → Acknowledge briefly. Leave `plan.md` in place (it is valuable as a record even if not executed). Stop.
 
-If the intent is ambiguous, ask a single clarifying question. Do not guess.
+If the intent is genuinely ambiguous (e.g., feedback that could mean "edit this plan" or "execute only this part"), call `AskUserQuestion` **once** with a single question offering 2–4 concrete interpretations as options. Follow the global rule at the top of this file. Do not guess, and do not ask if one interpretation is clearly more plausible than the others.
 
 ### How to revise `plan.md`
 
