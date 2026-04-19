@@ -1,8 +1,12 @@
 {
   "name": "domino",
-  "description": "Record a meeting, get an implementation plan, optionally execute it.",
+  "description": "Record a meeting, get a codebase-grounded implementation plan, optionally execute it.",
   "version": "0.1.0",
   "author": {
-    "name": "Nitin"
-  }
+    "name": "Nitin Murali",
+    "url": "https://github.com/nitinm21"
+  },
+  "homepage": "https://github.com/nitinm21/domino",
+  "repository": "https://github.com/nitinm21/domino",
+  "license": "MIT"
 }

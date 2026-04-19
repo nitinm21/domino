@@ -30,9 +30,11 @@ pub const MODEL_URL: &str =
     "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.en.bin";
 
 /// SHA256 of ggml-small.en.bin as published by ggerganov/whisper.cpp.
+/// Cross-checked against Hugging Face's `x-linked-etag` for the upstream file.
 /// Empty string => verification is skipped (with a warning). See module docs
 /// for the ritual to fill this in before shipping.
-pub const MODEL_SHA256_HEX: &str = "";
+pub const MODEL_SHA256_HEX: &str =
+    "c6138d6d58ecc8322097e0f987c32f1be8bb0a18532a3f88f734d1bbf9c41e5d";
 
 /// Resolve `~/.domino/models/`, creating it with mode 0o700 on unix if missing.
 pub fn models_dir() -> Result<PathBuf> {

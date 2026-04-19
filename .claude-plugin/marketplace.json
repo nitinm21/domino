@@ -1,0 +1,17 @@
+{
+  "name": "domino",
+  "owner": {
+    "name": "Nitin Murali",
+    "url": "https://github.com/nitinm21"
+  },
+  "metadata": {
+    "description": "Domino turns recorded meetings into codebase-grounded implementation plans inside Claude Code."
+  },
+  "plugins": [
+    {
+      "name": "domino",
+      "source": "./plugin",
+      "description": "Record a meeting, get a codebase-grounded implementation plan, optionally execute it."
+    }
+  ]
+}

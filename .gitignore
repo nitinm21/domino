@@ -3,8 +3,9 @@ node_modules/
 dist/
 *.DS_Store
 .env
-.claude
-whatisdomino.md
 so_far.md
 /thoughts
 /starter_pack
+
+.claude/*
+!.claude/napkin.md
