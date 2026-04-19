@@ -1,0 +1,23 @@
+# The screencapturekit crate links Swift's libswift_Concurrency.dylib via
+# @rpath. Cargo resolves `.cargo/config.toml` relative to the invocation
+# directory, so keep this at the repo root to cover both repo-root builds
+# (`cargo ... --manifest-path recorder/Cargo.toml`) and `cd recorder && cargo`
+# workflows.
+#
+# Prefer the system Swift runtime first to avoid loading duplicate copies of
+# `libswift_Concurrency.dylib` when `/usr/lib/swift` is already present.
+# The CLT and Xcode paths remain as fallbacks for machines where the system
+# runtime is absent or incomplete.
+[target.aarch64-apple-darwin]
+rustflags = [
+    "-C", "link-arg=-Wl,-rpath,/usr/lib/swift",
+    "-C", "link-arg=-Wl,-rpath,/Library/Developer/CommandLineTools/usr/lib/swift-5.5/macosx",
+    "-C", "link-arg=-Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx",
+]
+
+[target.x86_64-apple-darwin]
+rustflags = [
+    "-C", "link-arg=-Wl,-rpath,/usr/lib/swift",
+    "-C", "link-arg=-Wl,-rpath,/Library/Developer/CommandLineTools/usr/lib/swift-5.5/macosx",
+    "-C", "link-arg=-Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx",
+]

@@ -21,7 +21,17 @@ jobs:
           targets: aarch64-apple-darwin
 
       - name: Build release binary
-        run: cargo build --release --manifest-path recorder/Cargo.toml --target aarch64-apple-darwin
+        working-directory: recorder
+        run: cargo build --release --target aarch64-apple-darwin
+
+      - name: Verify release binary
+        run: |
+          BIN="recorder/target/aarch64-apple-darwin/release/domino-recorder"
+          otool -l "$BIN" | tee /tmp/domino-otool.txt
+          grep -F '/usr/lib/swift' /tmp/domino-otool.txt
+          grep -F '/Library/Developer/CommandLineTools/usr/lib/swift-5.5/macosx' /tmp/domino-otool.txt
+          "$BIN" --help > /tmp/domino-help.txt
+          test -s /tmp/domino-help.txt
 
       - name: Package artifact
         run: |
