@@ -37,11 +37,15 @@
    Do instead: prefer single-line commands; if a command truly needs multiple lines, use explicit continuations or fenced blocks that paste cleanly into `zsh`.
 8. **[2026-04-16] Sandboxed release builds can fail inside `screencapturekit`'s Swift bridge**
    Do instead: if `cargo build --release` dies with `sandbox-exec: sandbox_apply: Operation not permitted`, rerun the release build outside the workspace sandbox instead of changing Rust code.
+9. **[2026-04-18] Plugin smoke tests require the recorder binary in the Claude launch environment**
+   Do instead: before launching `claude --plugin-dir ...`, export `PATH=/Users/nitin/domino/recorder/target/release:$PATH` or install/symlink `domino-recorder` into a standard PATH directory, then verify with `which domino-recorder`.
 
 ## Domain Behavior Guardrails
-1. **[2026-04-16] `doctor` is still a stub**
+1. **[2026-04-18] Multi-folder routing Phase 1 is discovery-only**
+   Do instead: verify `scripts/domino-scan-folders.sh` output and `folders.json` creation during `/mstop`; do not expect per-folder routing or multi-plan execution until Phase 2 lands.
+2. **[2026-04-16] `doctor` is still a stub**
    Do instead: do not route users through `domino-recorder doctor` for permissions until Phase 4 lands; use direct macOS permission steps instead.
-2. **[2026-04-16] Current manual verification is terminal-driven, not browser-driven**
+3. **[2026-04-16] Current manual verification is terminal-driven, not browser-driven**
    Do instead: treat the browser as an optional sound source or meeting simulator; the authoritative checks are the saved Opus file, `status`, `ps`, and `ffprobe`.
-3. **[2026-04-16] Keep transcription downstream of the saved session artifact**
+4. **[2026-04-16] Keep transcription downstream of the saved session artifact**
    Do instead: treat `~/.domino/recordings/<session>/meeting.opus` as the stable handoff and write transcript outputs beside it rather than adding model work into the live capture loop.
