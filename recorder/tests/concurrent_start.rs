@@ -2,7 +2,12 @@ use std::process::Command;
 use std::sync::{Arc, Barrier};
 use std::thread;
 
+// Requires real audio hardware (cpal input device + ScreenCaptureKit).
+// Headless CI runners have no audio device so both starts fail and the test
+// can't distinguish the race outcome. Run locally with:
+//   cargo test --manifest-path recorder/Cargo.toml -- --ignored
 #[test]
+#[ignore = "requires audio hardware; skipped in CI"]
 fn two_concurrent_starts_exactly_one_succeeds() {
     let binary = env!("CARGO_BIN_EXE_domino-recorder");
     let tmp = std::env::temp_dir().join("domino-race-test");
