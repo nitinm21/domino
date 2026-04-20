@@ -45,9 +45,17 @@ if [[ -n "${DOMINO_VERSION:-}" ]]; then
   log "Using pinned version ${VERSION} (DOMINO_VERSION override)"
 else
   log "Resolving latest release from github.com/${REPO}..."
-  LATEST_JSON="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest")"
+  # /releases/latest returns 404 when only pre-releases exist. Fall back to
+  # /releases (all releases, newest first) so the installer works during the
+  # rc window before a stable v0.1.0 is tagged.
+  LATEST_JSON="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" 2>/dev/null || true)"
   VERSION="$(printf '%s' "${LATEST_JSON}" | awk -F'"' '/"tag_name":/ {print $4; exit}')"
-  [[ -n "${VERSION}" ]] || err "Could not resolve latest release tag. If only a pre-release is available, set DOMINO_VERSION=vX.Y.Z-rcN and re-run."
+  if [[ -z "${VERSION}" ]]; then
+    log "No stable release yet; falling back to newest pre-release..."
+    ALL_JSON="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases")"
+    VERSION="$(printf '%s' "${ALL_JSON}" | awk -F'"' '/"tag_name":/ {print $4; exit}')"
+  fi
+  [[ -n "${VERSION}" ]] || err "Could not resolve any release tag from github.com/${REPO}."
   log "Latest release: ${VERSION}"
 fi
 
