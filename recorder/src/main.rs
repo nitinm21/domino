@@ -11,8 +11,6 @@ use ringbuf::traits::Split;
 use ringbuf::HeapRb;
 use std::os::unix::io::AsRawFd;
 use std::path::Path;
-use std::sync::atomic::AtomicU64;
-use std::sync::Arc;
 
 const RING_BUFFER_SAMPLES: usize = 96_000; // 2 seconds at 48kHz
 
@@ -68,22 +66,21 @@ fn cmd_start(out_dir: Option<&Path>) -> Result<()> {
             let (mic_prod, mic_cons) = mic_rb.split();
             let mic = audio::mic::start_mic_capture(mic_prod)?;
 
-            // System capture (graceful degradation if it fails)
+            // System capture — required. A meeting recording without the
+            // other side is a silent recording, so we refuse to start.
+            // The parent detects the daemon exit and surfaces the first-run
+            // setup instructions via wait_for_daemon_ready.
             let sys_rb = HeapRb::<f32>::new(RING_BUFFER_SAMPLES);
             let (sys_prod, sys_cons) = sys_rb.split();
-            let (system, system_cons, system_dropped) = match start_system(sys_prod) {
-                Ok(cap) => {
-                    let dropped = cap.dropped_samples.clone();
-                    (Some(cap), Some(sys_cons), dropped)
-                }
-                Err(e) => {
-                    tracing::warn!(
-                        error = %e,
-                        "system audio capture unavailable — recording mic only (right channel will be silent)"
-                    );
-                    (None, None, Arc::new(AtomicU64::new(0)))
-                }
-            };
+            let system_capture = start_system(sys_prod).map_err(|e| {
+                tracing::error!(error = %e, "system audio capture failed to start");
+                anyhow::anyhow!(
+                    "Screen & System Audio Recording permission is required but could not be acquired: {e}"
+                )
+            })?;
+            let system_dropped = system_capture.dropped_samples.clone();
+            let system = Some(system_capture);
+            let system_cons = Some(sys_cons);
 
             // Audio captures are up. Writing the PID file is the parent's
             // readiness signal — do it here, AFTER captures started, so the
@@ -156,11 +153,15 @@ fn wait_for_daemon_ready(child_pid: libc::pid_t, log_path: &Path) -> Result<()> 
             let tail = read_log_tail(log_path, 20);
             bail!(
                 "recorder failed to start.\n\n\
-                 First-run setup on macOS:\n  \
+                 First-run setup on macOS (both permissions are required):\n  \
                  1. System Settings → Privacy & Security → Microphone: enable Claude Code (or your terminal).\n  \
                  2. System Settings → Privacy & Security → Screen & System Audio Recording: enable the same app.\n  \
                  3. Quit and relaunch Claude Code — macOS caches permissions per process, so the running app can't see grants made after it launched.\n  \
                  4. Run /mstart again.\n\n\
+                 If macOS never prompted for Screen & System Audio Recording, its privacy database has a stale decision.\n\
+                 Reset it, then retry from step 1:\n  \
+                 tccutil reset ScreenCapture\n  \
+                 tccutil reset Microphone\n\n\
                  Daemon log tail ({}):\n{}",
                 log_path.display(),
                 tail
@@ -269,7 +270,7 @@ fn start_system(_producer: ringbuf::HeapProd<f32>) -> Result<NoSystemCapture> {
 
 #[cfg(not(target_os = "macos"))]
 struct NoSystemCapture {
-    pub dropped_samples: Arc<AtomicU64>,
+    pub dropped_samples: std::sync::Arc<std::sync::atomic::AtomicU64>,
 }
 
 #[cfg(not(target_os = "macos"))]
