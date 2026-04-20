@@ -83,7 +83,9 @@ CI runs these on every push and pull request against `main`.
 
 Releases are cut by pushing a `v*` tag. GitHub Actions builds the darwin-arm64 binary, packages it, computes a SHA256, and attaches both to a GitHub Release. See `.github/workflows/release.yml`.
 
-Use `-rc` or `-beta` suffixes for pre-releases so `install.sh` keeps pointing at the last stable tag.
+Use `-rc` or `-beta` suffixes for pre-releases so the GitHub Release is marked as pre-release (not surfaced by the "Latest release" widget).
+
+When cutting a release that users should land on via `install.sh`, bump `DEFAULT_VERSION` in `install.sh` to the new tag in the same commit (or immediately after). The installer pins the version on purpose — it never hits GitHub's unauthenticated API for resolution, so it's unaffected by rate limits and CDN staleness at release time.
 
 ## Reporting issues
 
