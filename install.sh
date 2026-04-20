@@ -8,7 +8,7 @@ INSTALL_DIR_FALLBACK="${HOME}/.local/bin"
 
 # Pinned release. Bumped as part of the release cut (see CONTRIBUTING.md).
 # Override at call time with: DOMINO_VERSION=vX.Y.Z curl ... | DOMINO_VERSION=vX.Y.Z sh
-DEFAULT_VERSION="v0.1.0-rc2"
+DEFAULT_VERSION="v0.1.0-rc3"
 
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 err() { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
