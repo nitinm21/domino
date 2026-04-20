@@ -16,7 +16,7 @@ fn domino_dir() -> Result<PathBuf> {
     Ok(home.join(".domino"))
 }
 
-fn pid_file_path() -> Result<PathBuf> {
+pub fn pid_file_path() -> Result<PathBuf> {
     Ok(domino_dir()?.join("current.pid"))
 }
 

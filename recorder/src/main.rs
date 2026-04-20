@@ -61,18 +61,9 @@ fn cmd_start(out_dir: Option<&Path>) -> Result<()> {
             }
             drop(log_file);
 
-            // Write PID file with daemon's actual PID
-            session::write_pid_file(std::process::id(), &session_dir, &started_at)?;
-
-            tracing::info!(
-                session_dir = %session_dir.display(),
-                pid = std::process::id(),
-                "daemon started"
-            );
-
             let shutdown = signals::shutdown_flag()?;
 
-            // Mic capture
+            // Mic capture — may block on the macOS TCC prompt on first run.
             let mic_rb = HeapRb::<f32>::new(RING_BUFFER_SAMPLES);
             let (mic_prod, mic_cons) = mic_rb.split();
             let mic = audio::mic::start_mic_capture(mic_prod)?;
@@ -93,6 +84,17 @@ fn cmd_start(out_dir: Option<&Path>) -> Result<()> {
                     (None, None, Arc::new(AtomicU64::new(0)))
                 }
             };
+
+            // Audio captures are up. Writing the PID file is the parent's
+            // readiness signal — do it here, AFTER captures started, so the
+            // parent never reports a false success when mic setup fails.
+            session::write_pid_file(std::process::id(), &session_dir, &started_at)?;
+
+            tracing::info!(
+                session_dir = %session_dir.display(),
+                pid = std::process::id(),
+                "daemon ready"
+            );
 
             let encoder_handle = audio::encoder::spawn_encoder(
                 mic_cons,
@@ -128,15 +130,71 @@ fn cmd_start(out_dir: Option<&Path>) -> Result<()> {
         }
         child_pid => {
             // === Parent ===
-            // Give daemon a moment to initialize and write PID file
-            std::thread::sleep(std::time::Duration::from_millis(300));
+            wait_for_daemon_ready(child_pid, &log_path)?;
 
-            let info = session::write_pid_file(child_pid as u32, &session_dir, &started_at)?;
+            let info = session::read_active_session()?
+                .ok_or_else(|| anyhow::anyhow!("daemon reported ready but PID file is missing"))?;
             let json = serde_json::to_string(&info)?;
             println!("{json}");
-
             std::process::exit(0);
         }
+    }
+}
+
+/// Block until the daemon either (a) writes the PID file (ready), or
+/// (b) exits before doing so (failed — usually TCC permission denied).
+/// Returns Err on failure with a first-run-setup message and the tail of
+/// the daemon's log for debugging.
+fn wait_for_daemon_ready(child_pid: libc::pid_t, log_path: &Path) -> Result<()> {
+    let pid_path = session::pid_file_path()?;
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(30);
+
+    loop {
+        let mut status: libc::c_int = 0;
+        let ret = unsafe { libc::waitpid(child_pid, &mut status, libc::WNOHANG) };
+        if ret == child_pid {
+            let tail = read_log_tail(log_path, 20);
+            bail!(
+                "recorder failed to start.\n\n\
+                 First-run setup on macOS:\n  \
+                 1. System Settings → Privacy & Security → Microphone: enable Claude Code (or your terminal).\n  \
+                 2. System Settings → Privacy & Security → Screen & System Audio Recording: enable the same app.\n  \
+                 3. Quit and relaunch Claude Code — macOS caches permissions per process, so the running app can't see grants made after it launched.\n  \
+                 4. Run /mstart again.\n\n\
+                 Daemon log tail ({}):\n{}",
+                log_path.display(),
+                tail
+            );
+        }
+
+        if pid_path.exists() {
+            return Ok(());
+        }
+
+        if std::time::Instant::now() > deadline {
+            unsafe {
+                libc::kill(child_pid, libc::SIGTERM);
+            }
+            bail!(
+                "recorder daemon did not report ready within 30 seconds. \
+                 If a macOS permission dialog is waiting for input, dismiss it and re-run /mstart. \
+                 Otherwise see {}",
+                log_path.display()
+            );
+        }
+
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+}
+
+fn read_log_tail(path: &Path, lines: usize) -> String {
+    match std::fs::read_to_string(path) {
+        Ok(content) => {
+            let all: Vec<&str> = content.lines().collect();
+            let start = all.len().saturating_sub(lines);
+            all[start..].join("\n")
+        }
+        Err(_) => format!("  (log at {} not readable)", path.display()),
     }
 }
 
