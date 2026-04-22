@@ -7,14 +7,19 @@ export function Overview() {
       <Reveal>
         <SectionHeader title="What Domino does" />
         <p className="mb-3.5 text-[17px] leading-relaxed">
-          After most working conversations, someone has to sit down and translate what was said
-          into edits across many places: tickets in one project, spec changes in another, code in a
-          third, follow-ups for a fourth. That translation is tedious, lossy, and often skipped.
+          You finish an engineering meeting where ten things changed at once: the API shape is
+          different, one edge case needs a fix, a migration has to happen before release, and
+          somebody needs to update the docs so the rest of the team does not build against stale
+          assumptions. Everyone leaves aligned, but the real work is still trapped inside the
+          conversation until someone sits down and translates it into code changes, tickets, and
+          follow-ups.
         </p>
         <p className="mb-3.5 leading-relaxed text-ink-muted">
-          Domino does the fan-out automatically. It records the meeting, transcribes it locally,
-          routes each segment to the project it touched, and writes a grounded implementation plan
-          you can execute. Go from meeting to merge effortlessly.
+          Domino does that translation for you. It records the meeting, transcribes it locally,
+          separates the decisions by topic, routes each segment to the codebase or project it
+          touched, and writes a grounded implementation plan for what should happen next. Instead
+          of relying on memory and scattered notes, you leave the meeting with work that is already
+          structured and ready to execute.
         </p>
         {/*
         <blockquote className="my-5 border-l-[3px] border-ink pl-4 text-ink-muted">
