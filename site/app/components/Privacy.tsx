@@ -22,16 +22,6 @@ const ITEMS: Array<{ head: string; body: ReactNode }> = [
     ),
   },
   {
-    head: "Synthesis uses your Claude Code session.",
-    body: (
-      <>
-        During <code>/mstop</code>, the transcript text and any repo files Claude reads to ground
-        the plan are sent to Anthropic via your existing Claude Code subscription. Treat the
-        transcript the same way you treat anything you paste into Claude Code.
-      </>
-    ),
-  },
-  {
     head: "Execution is local.",
     body: (
       <>
