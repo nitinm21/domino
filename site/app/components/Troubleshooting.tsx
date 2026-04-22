@@ -82,6 +82,16 @@ const ITEMS: Array<{ id: string; head: ReactNode; body: ReactNode }> = [
       </p>
     ),
   },
+  {
+    id: "usage",
+    head: <>Does transcription count against Claude Code usage limits?</>,
+    body: (
+      <p>
+        No. Transcription runs on-device using Whisper. Only plan generation and execution count
+        against Claude Code usage limits.
+      </p>
+    ),
+  },
 ];
 
 export function Troubleshooting() {
