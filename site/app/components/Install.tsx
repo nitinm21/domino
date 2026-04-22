@@ -23,7 +23,9 @@ export function Install() {
               </li>
               <li className="leading-relaxed">
                 <p className="mb-2.5">
-                  <strong className="font-semibold">Add the plugin inside Claude Code:</strong>
+                  <strong className="font-semibold">
+                    Start Claude Code and install the plugin:
+                  </strong>
                 </p>
                 <CodeBlock
                   code={`/plugin marketplace add nitinm21/domino
@@ -33,7 +35,7 @@ export function Install() {
               </li>
               <li className="leading-relaxed">
                 <p className="mb-2.5">
-                  <strong className="font-semibold">Record a meeting:</strong>
+                  <strong className="font-semibold">Record meetings in Claude Code:</strong>
                 </p>
                 <CodeBlock
                   code={`/mstart
@@ -44,7 +46,7 @@ export function Install() {
               </li>
             </ol>
             <p className="mt-7 text-sm text-ink-muted">
-              On first <code>/mstart</code>, macOS will prompt for Microphone and Screen Recording
+              On first <code>/mstart</code>, macOS will prompt for Microphone and System Audio
               permissions.
             </p>
           </div>

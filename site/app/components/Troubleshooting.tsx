@@ -106,7 +106,7 @@ export function Troubleshooting() {
         transition={{ duration: 0.65, ease: [0.21, 0.47, 0.32, 0.98] }}
       >
         <SectionHeader title="FAQs" />
-        <div className="border-t border-rule">
+        <div>
           {ITEMS.map((it) => {
             const isOpen = open === it.id;
             return (
