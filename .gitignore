@@ -9,4 +9,5 @@ whatisdomino.md
 /starter_pack
 
 .claude/*
-!.claude/napkin.md
+**/.claude/napkin.md
+**/.playwright-mcp/
