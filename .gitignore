@@ -4,6 +4,7 @@ dist/
 *.DS_Store
 .env
 so_far.md
+whatisdomino.md
 /thoughts
 /starter_pack
 
