@@ -157,6 +157,23 @@
     background: rgb(var(--accent-rgb) / 0.18);
   }
 
+  .flow-node {
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-lg border px-4 py-2.5 text-[14px] font-medium leading-none tracking-[-0.005em];
+    border-color: rgb(var(--rule-strong-rgb));
+    background: rgb(var(--paper-soft-rgb));
+    color: rgb(var(--ink-rgb));
+  }
+
+  .flow-node--user {
+    background: rgb(var(--accent-rgb));
+    border-color: rgb(var(--accent-rgb));
+    color: rgb(255 255 255);
+    box-shadow:
+      0 1px 2px rgb(var(--accent-rgb) / 0.22),
+      0 6px 16px rgb(var(--accent-rgb) / 0.12),
+      inset 0 1px 0 rgb(255 255 255 / 0.14);
+  }
+
   /* Hero soft glow — contained within hero section, fades out */
   .hero-glow {
     position: absolute;

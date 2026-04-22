@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, type Variants } from "framer-motion";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { SectionHeader } from "./SectionHeader";
 
 const container: Variants = {
@@ -17,6 +17,13 @@ const item: Variants = {
     transition: { duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] },
   },
 };
+
+const STEPS: Array<{ label: string; isUser?: boolean }> = [
+  { label: "Record", isUser: true },
+  { label: "Transcription" },
+  { label: "Plan generation" },
+  { label: "Implementation" },
+];
 
 const TRUST: Array<{ head: string; body: ReactNode }> = [
   {
@@ -53,6 +60,10 @@ export function HowItWorks() {
           You record. Domino does the rest.
         </motion.p>
 
+        <motion.div variants={item} className="mb-10">
+          <FlowDiagram />
+        </motion.div>
+
         <motion.div variants={item} className="terminal-window mb-10">
           <div className="terminal-titlebar">
             <span className="terminal-dot bg-[#ff5f57]" aria-hidden />
@@ -88,5 +99,65 @@ export function HowItWorks() {
         </ul>
       </motion.div>
     </section>
+  );
+}
+
+function FlowDiagram() {
+  return (
+    <div className="flex flex-col items-center md:flex-row md:items-center">
+      {STEPS.map((step, i) => (
+        <Fragment key={step.label}>
+          <div className={step.isUser ? "flow-node flow-node--user" : "flow-node"}>
+            {step.label}
+          </div>
+          {i < STEPS.length - 1 && <FlowConnector />}
+        </Fragment>
+      ))}
+    </div>
+  );
+}
+
+function FlowConnector() {
+  return (
+    <>
+      <div
+        className="flex flex-col items-center py-1.5 text-ink-faint md:hidden"
+        aria-hidden
+      >
+        <div className="h-5 w-px bg-current opacity-50" />
+        <svg
+          className="-mt-[1px] h-[7px] w-[7px]"
+          viewBox="0 0 8 8"
+          fill="none"
+        >
+          <path
+            d="M1 2 L4 6 L7 2"
+            stroke="currentColor"
+            strokeWidth="1.25"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+      <div
+        className="hidden flex-1 items-center px-2 text-ink-faint md:flex"
+        aria-hidden
+      >
+        <div className="h-px flex-1 bg-current opacity-50" />
+        <svg
+          className="-ml-[1px] h-[7px] w-[7px]"
+          viewBox="0 0 8 8"
+          fill="none"
+        >
+          <path
+            d="M2 1 L6 4 L2 7"
+            stroke="currentColor"
+            strokeWidth="1.25"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+    </>
   );
 }
