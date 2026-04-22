@@ -20,7 +20,7 @@ const GROUPS: NavGroup[] = [
     items: [
       { id: "privacy", href: "#privacy", label: "Privacy" },
       { id: "requirements", href: "#requirements", label: "Requirements" },
-      { id: "troubleshooting", href: "#troubleshooting", label: "Troubleshooting" },
+      { id: "troubleshooting", href: "#troubleshooting", label: "FAQs" },
     ],
   },
 ];
