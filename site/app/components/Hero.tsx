@@ -91,7 +91,7 @@ export function Hero() {
           </span>
           <br />
           <span className="whitespace-nowrap">
-            To{" "}
+            to{" "}
             <IconChip tone="merge">
               <MergeIcon className="h-[0.66em] w-[0.66em]" />
             </IconChip>{" "}

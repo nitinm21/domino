@@ -1,0 +1,216 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - link "Domino" [ref=e4] [cursor=pointer]:
+        - /url: "#top"
+        - text: Domino
+      - list [ref=e6]:
+        - listitem [ref=e7]:
+          - link "Overview" [ref=e8] [cursor=pointer]:
+            - /url: "#overview"
+        - listitem [ref=e9]:
+          - link "How it works" [ref=e10] [cursor=pointer]:
+            - /url: "#how"
+        - listitem [ref=e11]:
+          - link "Install" [ref=e12] [cursor=pointer]:
+            - /url: "#install"
+        - listitem [ref=e13]:
+          - link "Commands" [ref=e14] [cursor=pointer]:
+            - /url: "#commands"
+        - listitem [ref=e15]:
+          - link "Privacy" [ref=e16] [cursor=pointer]:
+            - /url: "#privacy"
+        - listitem [ref=e17]:
+          - link "Troubleshooting" [ref=e18] [cursor=pointer]:
+            - /url: "#troubleshooting"
+        - listitem [ref=e19]:
+          - link "GitHub" [ref=e20] [cursor=pointer]:
+            - /url: https://github.com/nitinm21/domino
+            - img [ref=e21]
+  - main [ref=e23]:
+    - generic [ref=e25]:
+      - heading "Meetings in. Plans out." [level=1] [ref=e26]:
+        - text: Meetings in.
+        - text: Plans out.
+      - paragraph [ref=e27]: Domino records a working conversation inside Claude Code, routes each segment to the project it touched, and writes a grounded implementation plan per project — so you spend your time deciding, not transcribing.
+      - generic [ref=e29]:
+        - code [ref=e30]: $ curl -fsSL https://raw.githubusercontent.com/nitinm21/domino/main/install.sh | sh
+        - button "Copy install command" [ref=e31] [cursor=pointer]: Copy
+      - paragraph [ref=e32]:
+        - text: macOS 14+ on Apple Silicon. Requires
+        - link "Claude Code" [ref=e33] [cursor=pointer]:
+          - /url: https://claude.com/claude-code
+        - text: .
+    - generic [ref=e35]:
+      - paragraph [ref=e36]: Overview
+      - heading "What Domino does" [level=2] [ref=e37]
+      - paragraph [ref=e38]: "After most working conversations, someone has to sit down and translate what was said into edits across many places: tickets in one project, spec changes in another, code in a third, follow-ups for a fourth. That translation is tedious, lossy, and often skipped."
+      - paragraph [ref=e39]: Domino does the fan-out automatically. It records the meeting, transcribes it locally, identifies the projects the conversation touched, and hands each project a grounded implementation plan — pain points mapped to real files, decisions, action items, open questions.
+      - blockquote [ref=e40]:
+        - paragraph [ref=e41]:
+          - strong [ref=e42]: Routing and synthesis are the heart of the product.
+          - text: Execution is a convenience, not the point. Domino is not trying to replace the human — it's trying to be the sounding board that has already done the boring fan-out work, so you show up to a structured, grounded starting place per project and decide what to do next.
+    - generic [ref=e44]:
+      - paragraph [ref=e45]: How it works
+      - heading "From meeting to plan in five steps" [level=2] [ref=e46]
+      - list [ref=e47]:
+        - listitem [ref=e48]:
+          - generic [ref=e49]: "1"
+          - heading "Record" [level=3] [ref=e50]
+          - paragraph [ref=e51]:
+            - text: Run
+            - code [ref=e52]: /mstart
+            - text: inside Claude Code. Domino captures mic and system audio into a single stereo Opus file on disk. Run
+            - code [ref=e53]: /mstop
+            - text: when the meeting ends.
+        - listitem [ref=e54]:
+          - generic [ref=e55]: "2"
+          - heading "Transcribe locally" [level=3] [ref=e56]
+          - paragraph [ref=e57]:
+            - text: Whisper runs on-device. No audio leaves your machine. Left channel becomes
+            - code [ref=e58]: "\"You\""
+            - text: ", right channel becomes"
+            - code [ref=e59]: "\"Meeting\""
+            - text: — you get clean speaker separation out of the box.
+        - listitem [ref=e60]:
+          - generic [ref=e61]: "3"
+          - heading "Route" [level=3] [ref=e62]
+          - paragraph [ref=e63]: Domino scans the directory you launched Claude Code from, identifies the projects underneath, and maps each segment of the transcript to the project it actually concerns.
+        - listitem [ref=e64]:
+          - generic [ref=e65]: "4"
+          - heading "Synthesize" [level=3] [ref=e66]
+          - paragraph [ref=e67]: "For each project, Domino writes a grounded plan: decisions, action items with owners, proposed file-level changes with quoted rationale, risks, and open questions. Empty meetings produce no plan — absence is a signal."
+        - listitem [ref=e68]:
+          - generic [ref=e69]: "5"
+          - heading "Execute (optional)" [level=3] [ref=e70]
+          - paragraph [ref=e71]: Spawn a scoped subprocess per project, create a branch, commit changes one at a time. Never pushes to remote, never opens a PR. You decide whether to run it — and you decide what to keep.
+    - generic [ref=e73]:
+      - paragraph [ref=e74]: Install
+      - heading "Two steps, under a minute" [level=2] [ref=e75]
+      - list [ref=e76]:
+        - listitem [ref=e77]:
+          - paragraph [ref=e78]:
+            - strong [ref=e79]: Install the recorder binary
+            - text: "(macOS, Apple Silicon):"
+          - generic [ref=e80]: curl -fsSL https://raw.githubusercontent.com/nitinm21/domino/main/install.sh | sh
+          - paragraph [ref=e81]:
+            - text: The installer resolves the latest release, verifies the SHA-256, strips the Gatekeeper quarantine attribute, and installs to
+            - code [ref=e82]: /usr/local/bin
+            - text: (or
+            - code [ref=e83]: ~/.local/bin
+            - text: as fallback).
+        - listitem [ref=e84]:
+          - paragraph [ref=e85]:
+            - strong [ref=e86]: "Add the plugin inside Claude Code:"
+          - generic [ref=e87]: /plugin marketplace add nitinm21/domino /plugin install domino@domino
+        - listitem [ref=e88]:
+          - paragraph [ref=e89]:
+            - strong [ref=e90]: "Record a meeting:"
+          - generic [ref=e91]: /mstart … hold the meeting … /mstop
+      - paragraph [ref=e92]:
+        - text: On first
+        - code [ref=e93]: /mstart
+        - text: ", macOS will prompt for Microphone and Screen Recording permissions. On first"
+        - code [ref=e94]: /mstop
+        - text: ", the Whisper model (~466 MB) downloads once to"
+        - code [ref=e95]: ~/.domino/models/
+        - text: .
+    - generic [ref=e97]:
+      - paragraph [ref=e98]: Commands
+      - heading "The full surface" [level=2] [ref=e99]
+      - generic [ref=e100]:
+        - generic [ref=e101]:
+          - code [ref=e103]: /mstart
+          - generic [ref=e104]: Start recording. Captures mic and system audio.
+        - generic [ref=e105]:
+          - code [ref=e107]: /mstat
+          - generic [ref=e108]:
+            - text: Show the active session, or
+            - code [ref=e109]: "{}"
+            - text: if idle.
+        - generic [ref=e110]:
+          - code [ref=e112]: /mstop
+          - generic [ref=e113]: Stop, transcribe locally, synthesize plans, optionally execute on a branch.
+      - heading "Where recordings live" [level=3] [ref=e114]
+      - paragraph [ref=e115]:
+        - text: Every meeting gets its own directory under
+        - code [ref=e116]: ~/.domino/recordings/<YYYY-MM-DD-HHMM>/
+        - text: "containing:"
+      - generic [ref=e117]: meeting.opus — stereo Opus recording (L = mic, R = system) transcript.json — structured transcript recorder.log — daemon log transcription.log — transcription phase log plan.md — written after /mstop if synthesis produced actionable content
+    - generic [ref=e119]:
+      - paragraph [ref=e120]: Privacy
+      - heading "What leaves your machine, and what doesn't" [level=2] [ref=e121]
+      - list [ref=e122]:
+        - listitem [ref=e123]:
+          - strong [ref=e124]: Audio stays on device.
+          - text: The Opus file lives under
+          - code [ref=e125]: ~/.domino/recordings/
+          - text: and is never uploaded by this plugin.
+        - listitem [ref=e126]:
+          - strong [ref=e127]: Transcription is local.
+          - text: Whisper runs on your machine via the bundled model. No audio leaves the device during transcription.
+        - listitem [ref=e128]:
+          - strong [ref=e129]: Synthesis uses your Claude Code session.
+          - text: During
+          - code [ref=e130]: /mstop
+          - text: ", the transcript text and any repo files Claude reads to ground the plan are sent to Anthropic via your existing Claude Code subscription. Treat the transcript the same way you treat anything you paste into Claude Code."
+        - listitem [ref=e131]:
+          - strong [ref=e132]: Execution is local.
+          - text: Branch creation, edits, tests, and commits all happen in your working copy. The plugin never runs
+          - code [ref=e133]: git push
+          - text: and never opens a PR.
+    - generic [ref=e135]:
+      - paragraph [ref=e136]: Requirements
+      - heading "What you need" [level=2] [ref=e137]
+      - list [ref=e138]:
+        - listitem [ref=e139]: macOS 14+ on Apple Silicon.
+        - listitem [ref=e140]:
+          - text: Xcode Command Line Tools (
+          - code [ref=e141]: xcode-select --install
+          - text: ). The recorder links against Swift's concurrency runtime via ScreenCaptureKit.
+        - listitem [ref=e142]:
+          - text: A
+          - link "Claude Code" [ref=e143] [cursor=pointer]:
+            - /url: https://claude.com/claude-code
+          - text: subscription.
+        - listitem [ref=e144]: Roughly 500 MB of disk for the first-run Whisper model download.
+    - generic [ref=e146]:
+      - paragraph [ref=e147]: Troubleshooting
+      - heading "Common sharp edges" [level=2] [ref=e148]
+      - generic [ref=e149]:
+        - 'button "domino-recorder: command not found inside Claude Code" [ref=e151] [cursor=pointer]':
+          - generic [ref=e152]:
+            - code [ref=e153]: "domino-recorder: command not found"
+            - text: inside Claude Code
+          - generic [ref=e154]: +
+        - 'button "xcrun: error: invalid active developer path or missing Swift libraries" [ref=e156] [cursor=pointer]':
+          - generic [ref=e157]:
+            - code [ref=e158]: "xcrun: error: invalid active developer path"
+            - text: or missing Swift libraries
+          - generic [ref=e159]: +
+        - button "Intel Mac" [ref=e161] [cursor=pointer]:
+          - generic [ref=e162]: Intel Mac
+          - generic [ref=e163]: +
+        - button "macOS Gatekeeper blocks the binary" [ref=e165] [cursor=pointer]:
+          - generic [ref=e166]: macOS Gatekeeper blocks the binary
+          - generic [ref=e167]: +
+        - button "Permissions prompt didn't appear" [ref=e169] [cursor=pointer]:
+          - generic [ref=e170]: Permissions prompt didn't appear
+          - generic [ref=e171]: +
+  - contentinfo [ref=e172]:
+    - generic [ref=e173]:
+      - generic [ref=e174]:
+        - text: Built by
+        - link "Nitin Murali" [ref=e175] [cursor=pointer]:
+          - /url: https://github.com/nitinm21
+        - text: . MIT licensed.
+      - generic [ref=e176]:
+        - link "GitHub" [ref=e177] [cursor=pointer]:
+          - /url: https://github.com/nitinm21/domino
+        - generic [ref=e178]: ·
+        - link "License" [ref=e179] [cursor=pointer]:
+          - /url: https://github.com/nitinm21/domino/blob/main/LICENSE
+        - generic [ref=e180]: ·
+        - link "Issues" [ref=e181] [cursor=pointer]:
+          - /url: https://github.com/nitinm21/domino/issues
+  - alert [ref=e182]
