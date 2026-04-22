@@ -17,7 +17,7 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Domino — From meeting to merge.",
   description:
-    "Domino records a working conversation inside Claude Code, routes each segment to the project it touched, and writes a grounded implementation plan you can execute.",
+    "Domino records meetings inside Claude Code, transcribes it, and writes a grounded implementation plan you can execute.",
   openGraph: {
     title: "Domino — From meeting to merge.",
     description: "A meeting-aware thinking partner for Claude Code.",

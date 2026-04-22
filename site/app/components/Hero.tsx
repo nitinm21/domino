@@ -102,8 +102,8 @@ export function Hero() {
           variants={item}
           className="mb-9 max-w-[620px] text-[18px] leading-relaxed text-ink-muted"
         >
-          Domino records a working conversation inside Claude Code, routes each segment to the
-          project it touched, and writes a grounded implementation plan you can execute.
+          Domino records meetings inside Claude Code, transcribes it, and writes a grounded
+          implementation plan you can execute.
         </motion.p>
         <motion.div variants={item} className="mb-4">
           <CodeBlock
