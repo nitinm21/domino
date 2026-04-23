@@ -9,11 +9,13 @@ import { Privacy } from "./components/Privacy";
 import { Requirements } from "./components/Requirements";
 import { Troubleshooting } from "./components/Troubleshooting";
 import { Footer } from "./components/Footer";
+import { ThemeToggle } from "./components/ThemeToggle";
 
 export default function Page() {
   return (
     <>
       <MobileNav />
+      <ThemeToggle className="fixed right-6 top-6 z-40 hidden lg:inline-flex" />
       <div className="lg:flex">
         <Sidebar />
         <div className="min-w-0 flex-1">

@@ -15,6 +15,7 @@
     --rule-strong-rgb: 217 216 210;
     --accent-rgb: 36 88 255;
     --accent-hover-rgb: 26 68 214;
+    --accent-on-rgb: 255 255 255;
     --merge-rgb: 45 164 78;
     --hero-glow-primary-rgb: 36 88 255;
     --hero-glow-secondary-rgb: 94 145 255;
@@ -24,6 +25,34 @@
     --code-border-rgb: 40 43 49;
     --code-ink-rgb: 229 231 235;
     --code-muted-rgb: 122 126 134;
+    --grid-line-rgb: 16 17 16;
+    --grid-line-alpha: 0.05;
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper-rgb: 13 13 14;
+    --paper-soft-rgb: 20 20 22;
+    --paper-code-rgb: 28 28 31;
+    --ink-rgb: 237 237 234;
+    --ink-muted-rgb: 168 168 162;
+    --ink-faint-rgb: 120 120 114;
+    --rule-rgb: 38 38 40;
+    --rule-strong-rgb: 56 56 58;
+    --accent-rgb: 99 145 255;
+    --accent-hover-rgb: 140 175 255;
+    --accent-on-rgb: 10 14 28;
+    --merge-rgb: 74 205 116;
+    --hero-glow-primary-rgb: 99 145 255;
+    --hero-glow-secondary-rgb: 150 183 255;
+    --shadow-rgb: 0 0 0;
+    --code-surface-rgb: 20 20 22;
+    --code-surface-top-rgb: 26 26 28;
+    --code-border-rgb: 48 48 52;
+    --code-ink-rgb: 229 231 235;
+    --code-muted-rgb: 132 134 140;
+    --grid-line-rgb: 255 255 255;
+    --grid-line-alpha: 0.04;
   }
 
   html {
@@ -167,7 +196,7 @@
   .flow-node--user {
     background: rgb(var(--accent-rgb));
     border-color: rgb(var(--accent-rgb));
-    color: rgb(255 255 255);
+    color: rgb(var(--accent-on-rgb));
     box-shadow:
       0 1px 2px rgb(var(--accent-rgb) / 0.22),
       0 6px 16px rgb(var(--accent-rgb) / 0.12),
@@ -202,8 +231,8 @@
     inset: 0;
     pointer-events: none;
     background-image:
-      linear-gradient(to right, rgb(var(--ink-rgb) / 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(var(--ink-rgb) / 0.05) 1px, transparent 1px);
+      linear-gradient(to right, rgb(var(--grid-line-rgb) / var(--grid-line-alpha)) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--grid-line-rgb) / var(--grid-line-alpha)) 1px, transparent 1px);
     background-size: 56px 56px;
     mask-image: radial-gradient(ellipse 60% 50% at 50% 0%, #000 20%, transparent 75%);
     -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 0%, #000 20%, transparent 75%);

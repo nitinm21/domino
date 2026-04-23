@@ -26,14 +26,26 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FDFDFC",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FDFDFC" },
+    { media: "(prefers-color-scheme: dark)", color: "#0D0D0E" },
+  ],
   width: "device-width",
   initialScale: 1,
 };
 
+const themeInitScript = `(function(){try{var t=localStorage.getItem('domino-theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='light';}})();`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${mono.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="bg-paper font-sans text-ink">{children}</body>
     </html>
   );
