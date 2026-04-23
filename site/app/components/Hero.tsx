@@ -122,7 +122,7 @@ export function Hero() {
           >
             Claude Code
           </a>{" "}
-          <span>(Codex plugin coming soon!)</span>
+          <span>(Codex support coming soon!)</span>
           .
         </motion.p>
       </motion.div>
