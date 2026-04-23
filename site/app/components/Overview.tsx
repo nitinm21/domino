@@ -1,5 +1,6 @@
 import { Reveal } from "./Reveal";
 import { SectionHeader } from "./SectionHeader";
+import { VideoEmbed } from "./VideoEmbed";
 
 export function Overview() {
   return (
@@ -19,6 +20,10 @@ export function Overview() {
           Instead of relying on memory and scattered notes, you leave the meeting with work that is
           already structured and ready to execute.
         </p>
+        <p className="mb-3 mt-6 text-xs text-ink-muted">
+          Prefer to see it in action? Here&apos;s a short walkthrough:
+        </p>
+        <VideoEmbed />
         {/*
         <blockquote className="my-5 border-l-[3px] border-ink pl-4 text-ink-muted">
           <p className="m-0">
