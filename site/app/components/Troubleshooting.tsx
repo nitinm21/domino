@@ -5,34 +5,33 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { CodeBlock } from "./CodeBlock";
 import { SectionHeader } from "./SectionHeader";
-import { useTool, type Tool } from "./ToolContext";
 
 type Item = { id: string; head: ReactNode; body: ReactNode };
 
-function items(tool: Tool): Item[] {
-  const host = tool === "claude-code" ? "Claude Code" : "Codex CLI";
-  const installUrl =
-    tool === "claude-code"
-      ? "https://raw.githubusercontent.com/nitinm21/domino/main/install.sh"
-      : "https://raw.githubusercontent.com/nitinm21/domino-codex/main/install.sh";
-
+function items(): Item[] {
   return [
     {
       id: "not-found",
       head: (
         <>
-          Why does {host} say <code>domino-recorder: command not found</code>?
+          Why does Claude Code/Codex say <code>domino-recorder: command not found</code>?
         </>
       ),
       body: (
         <>
-          <p className="mb-2.5">
-            Run the curl installer first — the plugin shells out to{" "}
+          <p className="mb-3">
+            Run the curl installer first. The plugin shells out to{" "}
             <code>domino-recorder</code> on your PATH.
           </p>
+          <h4 className="mb-2 font-semibold text-ink">Claude Code</h4>
           <CodeBlock
-            code={`curl -fsSL ${installUrl} | sh`}
-            copyLabel="Copy install command"
+            code="curl -fsSL https://raw.githubusercontent.com/nitinm21/domino/main/install.sh | sh"
+            copyLabel="Copy Claude Code install command"
+          />
+          <h4 className="mb-2 mt-4 font-semibold text-ink">Codex</h4>
+          <CodeBlock
+            code="curl -fsSL https://raw.githubusercontent.com/nitinm21/domino-codex/main/install.sh | sh"
+            copyLabel="Copy Codex install command"
           />
         </>
       ),
@@ -88,7 +87,7 @@ function items(tool: Tool): Item[] {
             System Settings → Privacy &amp; Security → Microphone
           </strong>{" "}
           and <strong className="font-semibold text-ink">Screen Recording</strong>, and add
-          your terminal (or {host}) to the allowed list. Restart the app after granting.
+          your terminal to the allowed list. Restart the app after granting.
         </p>
       ),
     },
@@ -106,9 +105,8 @@ function items(tool: Tool): Item[] {
 }
 
 export function Troubleshooting() {
-  const { tool } = useTool();
   const [open, setOpen] = useState<string | null>(null);
-  const list = items(tool);
+  const list = items();
 
   return (
     <section id="troubleshooting" className="mt-24">
