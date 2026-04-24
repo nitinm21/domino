@@ -1,6 +1,7 @@
 # Domino
 
-A meeting-aware thinking partner for Claude Code. Record a working conversation, get a codebase-grounded implementation plan per project the conversation touched, optionally execute it on a branch.
+Domino records meetings inside your coding agent, transcribes it, and writes a grounded implementation plan you can execute.
+This contains installation instructions for Claude Code. For Codex CLI installation, go here: https://github.com/nitinm21/domino-codex/
 
 ## Install
 
