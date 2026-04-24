@@ -79,7 +79,7 @@ export function ToolTabs({ ariaLabel, layoutId, className }: ToolTabsProps) {
               <motion.span
                 layoutId={layoutId}
                 aria-hidden
-                className="absolute inset-0 rounded-[10px] bg-paper shadow-sm ring-1 ring-rule-strong"
+                className="absolute inset-0 rounded-[10px] bg-paper-raised shadow-sm ring-1 ring-rule-strong"
                 transition={{ type: "spring", stiffness: 500, damping: 40 }}
               />
             )}

@@ -7,6 +7,7 @@
     color-scheme: light;
     --paper-rgb: 253 253 252;
     --paper-soft-rgb: 247 247 244;
+    --paper-raised-rgb: 253 253 252;
     --paper-code-rgb: 244 244 239;
     --ink-rgb: 16 17 16;
     --ink-muted-rgb: 98 100 96;
@@ -33,12 +34,13 @@
     color-scheme: dark;
     --paper-rgb: 13 13 14;
     --paper-soft-rgb: 20 20 22;
+    --paper-raised-rgb: 33 34 39;
     --paper-code-rgb: 28 28 31;
     --ink-rgb: 237 237 234;
     --ink-muted-rgb: 168 168 162;
     --ink-faint-rgb: 120 120 114;
-    --rule-rgb: 38 38 40;
-    --rule-strong-rgb: 56 56 58;
+    --rule-rgb: 28 28 32;
+    --rule-strong-rgb: 64 66 72;
     --accent-rgb: 99 145 255;
     --accent-hover-rgb: 140 175 255;
     --accent-on-rgb: 10 14 28;
@@ -46,9 +48,9 @@
     --hero-glow-primary-rgb: 99 145 255;
     --hero-glow-secondary-rgb: 150 183 255;
     --shadow-rgb: 0 0 0;
-    --code-surface-rgb: 20 20 22;
-    --code-surface-top-rgb: 26 26 28;
-    --code-border-rgb: 48 48 52;
+    --code-surface-rgb: 26 27 31;
+    --code-surface-top-rgb: 34 35 40;
+    --code-border-rgb: 36 38 44;
     --code-ink-rgb: 229 231 235;
     --code-muted-rgb: 132 134 140;
     --grid-line-rgb: 255 255 255;
@@ -130,7 +132,7 @@
     border: 1px solid rgb(var(--code-border-rgb));
     background:
       linear-gradient(180deg, rgb(var(--code-surface-top-rgb)), rgb(var(--code-surface-rgb)));
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
   }
 
   .terminal-window {
@@ -140,7 +142,7 @@
     border: 1px solid rgb(var(--code-border-rgb));
     background:
       linear-gradient(180deg, rgb(var(--code-surface-top-rgb)), rgb(var(--code-surface-rgb)));
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
   }
 
   .terminal-titlebar {

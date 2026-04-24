@@ -15,6 +15,7 @@ const config: Config = {
         paper: {
           DEFAULT: colorVar("--paper-rgb"),
           soft: colorVar("--paper-soft-rgb"),
+          raised: colorVar("--paper-raised-rgb"),
           code: colorVar("--paper-code-rgb"),
         },
         rule: {
