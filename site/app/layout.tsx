@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { ToolProvider } from "./components/ToolContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -46,7 +47,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="bg-paper font-sans text-ink">{children}</body>
+      <body className="bg-paper font-sans text-ink">
+        <ToolProvider>{children}</ToolProvider>
+      </body>
     </html>
   );
 }

@@ -1,7 +1,9 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { CodeBlock } from "./CodeBlock";
+import { ToolTabs } from "./ToolTabs";
+import { useTool } from "./ToolContext";
 
 const container: Variants = {
   hidden: {},
@@ -73,7 +75,15 @@ function IconChip({
   );
 }
 
+const CURL = {
+  "claude-code":
+    "curl -fsSL https://raw.githubusercontent.com/nitinm21/domino/main/install.sh | sh",
+  codex:
+    "curl -fsSL https://raw.githubusercontent.com/nitinm21/domino-codex/main/install.sh | sh",
+} as const;
+
 export function Hero() {
+  const { tool } = useTool();
   return (
     <section className="relative pb-2 pt-6 md:pt-10">
       <div className="hero-grid" aria-hidden />
@@ -102,27 +112,36 @@ export function Hero() {
           variants={item}
           className="mb-9 max-w-[620px] text-[18px] leading-relaxed text-ink-muted"
         >
-          Domino records meetings inside Claude Code, transcribes it, and writes a grounded
-          implementation plan you can execute.
+          Domino records meetings inside your coding agent, transcribes it, and writes a
+          grounded implementation plan you can execute.
         </motion.p>
+        <motion.div variants={item} className="mb-3">
+          <ToolTabs layoutId="tool-tabs-hero" ariaLabel="Choose your install flow" />
+        </motion.div>
         <motion.div variants={item} className="mb-4">
-          <CodeBlock
-            code="curl -fsSL https://raw.githubusercontent.com/nitinm21/domino/main/install.sh | sh"
-            copyLabel="Copy install command"
-            className="max-w-[640px]"
-            preClassName="whitespace-nowrap"
-            prefix="$ "
-          />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={tool}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.2, ease: [0.21, 0.47, 0.32, 0.98] }}
+            >
+              <CodeBlock
+                code={CURL[tool]}
+                copyLabel="Copy install command"
+                className="max-w-[640px]"
+                preClassName="whitespace-nowrap"
+                prefix="$ "
+              />
+            </motion.div>
+          </AnimatePresence>
         </motion.div>
         <motion.p variants={item} className="text-sm text-ink-muted">
           macOS 14+ on Apple Silicon. Requires{" "}
-          <a
-            href="https://claude.com/claude-code"
-            className="text-accent underline-offset-[3px] transition-colors hover:text-accent-hover hover:underline"
-          >
-            Claude Code
-          </a>{" "}
-          <span>(Codex support coming soon!)</span>
+          <span className="text-ink">
+            {tool === "claude-code" ? "Claude Code" : "Codex CLI"}
+          </span>
           .
         </motion.p>
       </motion.div>
