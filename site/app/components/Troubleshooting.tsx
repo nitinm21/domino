@@ -5,7 +5,6 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { CodeBlock } from "./CodeBlock";
 import { SectionHeader } from "./SectionHeader";
-import { ToolTabs } from "./ToolTabs";
 import { useTool, type Tool } from "./ToolContext";
 
 type Item = { id: string; head: ReactNode; body: ReactNode };
@@ -95,11 +94,11 @@ function items(tool: Tool): Item[] {
     },
     {
       id: "usage",
-      head: <>Does transcription count against {host} usage limits?</>,
+      head: <>Does transcription count against Claude Code/Codex usage limits?</>,
       body: (
         <p>
           No. Transcription runs on-device using Whisper. Only plan generation and
-          execution count against {host} usage limits.
+          execution count against Claude Code/Codex usage limits.
         </p>
       ),
     },
@@ -120,9 +119,6 @@ export function Troubleshooting() {
         transition={{ duration: 0.65, ease: [0.21, 0.47, 0.32, 0.98] }}
       >
         <SectionHeader title="FAQs" />
-        <div className="mb-3">
-          <ToolTabs layoutId="tool-tabs-faqs" />
-        </div>
         <div>
           {list.map((it) => {
             const isOpen = open === it.id;

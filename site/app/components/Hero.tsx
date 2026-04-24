@@ -138,11 +138,7 @@ export function Hero() {
           </AnimatePresence>
         </motion.div>
         <motion.p variants={item} className="text-sm text-ink-muted">
-          macOS 14+ on Apple Silicon. Requires{" "}
-          <span className="text-ink">
-            {tool === "claude-code" ? "Claude Code" : "Codex CLI"}
-          </span>
-          .
+          macOS 14+ on Apple Silicon.
         </motion.p>
       </motion.div>
     </section>
