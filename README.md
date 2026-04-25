@@ -28,7 +28,9 @@ This contains installation instructions for Claude Code. For Codex CLI installat
 
 ## What it does
 
-After most working conversations, someone has to sit down and translate what was said into edits across many places: tickets in one project, spec changes in another, code in a third, follow-ups for a fourth. That translation is tedious, lossy, and often skipped. Domino does the fan-out automatically so the human can spend their time deciding, not transcribing.
+You finish a meeting where ten things changed at once: the API shape is different, one edge case needs a fix, a migration has to happen before release, and somebody needs to update the docs so the rest of the team does not build against stale assumptions. Everyone leaves aligned, but the real work is still trapped inside the conversation until someone sits down and translates it into a plan your agent can execute.
+
+Domino does that for you. It records the meeting and transcribes it locally. With its understanding of the codebase, it writes a grounded implementation plan (grounded against your codebase) you can execute. Instead of relying on memory and scattered notes, you leave the meeting with work that is already structured and ready to execute.
 
 More information: https://domino-meet.vercel.app/
 
