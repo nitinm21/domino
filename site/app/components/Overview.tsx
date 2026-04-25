@@ -24,6 +24,16 @@ export function Overview() {
           Prefer to see it in action? Here&apos;s a short walkthrough:
         </p>
         <VideoEmbed />
+        <p className="mt-3 text-xs text-ink-muted">
+          <a
+            href="https://nitinm21.github.io/cc-chat-transcript/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline decoration-ink-muted/40 underline-offset-2 transition-colors hover:text-ink hover:decoration-ink"
+          >
+            Claude Code transcript from this video (via <code className="font-mono">/export</code>) →
+          </a>
+        </p>
         {/*
         <blockquote className="my-5 border-l-[3px] border-ink pl-4 text-ink-muted">
           <p className="m-0">
